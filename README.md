@@ -33,8 +33,9 @@ For debug purposes and reporting issues, please start the script with the `-v` p
 ## Tested Devices
 Please let me know if you tested this script with another device (regardless of whether it was successful or not).
 
-- Gigaset S700 H PRO (USB + Bluetooth working)
 - Gigaset S68H (Bluetooth working, no USB port)
+- Gigaset CL660HX (USB working, no Bluetooth)
+- Gigaset S700H PRO (USB + Bluetooth working)
 
 ## Support
 If you like this project please consider making a donation using the sponsor button on [GitHub](https://github.com/schorschii/QuickSync4Linux) to support further development. If your financial resources do not allow this, you can at least leave a star for the Github repo.
