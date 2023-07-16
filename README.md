@@ -19,13 +19,13 @@ Then, you can use one of the following commands:
 ./quicksync.py info
 
 # read device contacts and print VCF to stdout (use --file to store it into a file instead)
-./quicksync getcontacts
+./quicksync.py getcontacts
 
 # create a new contact on device from file
-./quicksync putcontact --file mycontact.vcf
+./quicksync.py putcontact --file mycontact.vcf
 
 # start a call
-./quicksync dial 1234567890
+./quicksync.py dial 1234567890
 ```
 
 For debug purposes and reporting issues, please start the script with the `-v` parameter and have a look at the serial communication.
