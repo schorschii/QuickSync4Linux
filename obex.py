@@ -123,6 +123,7 @@ class FilePath:
     DevInfo = "/telecom/devinfo.txt"
     LuidCC = "/telecom/pb/luid/cc.log"
     Luid0 = "/telecom/pb/luid/0.log"
+    VCardLuid = "/telecom/pb/luid/{0}.vcf"
     NewVCardGQS = "/telecom/pb/luid/zapis.vcf"
     NewVCardGDS = "/telecom/pb/luid/.vcf"
     IncomingCalls = "telecom/ich.log"

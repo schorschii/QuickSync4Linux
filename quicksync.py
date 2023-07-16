@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
     description='Communicate with Gigaset devices',
     epilog='(c) Georg Sieber 2023. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
 )
-parser.add_argument('action', help='one of: info, dial, getcontacts, putcontact')
+parser.add_argument('action', help='one of: info, dial, getcontacts, createcontact, editcontact, deletecontact')
 parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action')
 parser.add_argument('-d', '--device', default='/dev/ttyACM0', help='serial port device')
 parser.add_argument('-b', '--baud', default=9600)
@@ -26,6 +26,10 @@ args = parser.parse_args()
 # open serial port
 ser = serial.Serial(args.device, args.baud)
 if(args.verbose): print('Connected to:', ser.name)
+
+def readVcfFile(path):
+    vcf = open(path, 'rb').read()
+    return vcf.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n') # ensure CRLF line breaks
 
 def sendAndReadResponse(data, wait=None, isObex=False):
     if(args.verbose):
@@ -106,11 +110,8 @@ elif(args.action == 'dial'):
 
 elif(args.action == 'getcontacts'):
     sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
-
     sendAndReadResponse(
-        obex.compileConnect(
-            obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)
-        ),
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
         isObex=True
     )
 
@@ -137,23 +138,18 @@ elif(args.action == 'getcontacts'):
 
     time.sleep(at.Delay.ObexBoundary)
     sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
-
     time.sleep(at.Delay.AfterExitObex)
     sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
 
 
-elif(args.action == 'putcontact'):
+elif(args.action == 'createcontact'):
     if(args.file == '-' or args.file == ''):
         raise Exception('Please give a .vcf file for import via --file parameter')
-    vcf = open(args.file, 'rb').read()
-    vcf = vcf.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n') # ensure CRLF line breaks
+    vcf = readVcfFile(args.file)
 
     sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
-
     sendAndReadResponse(
-        obex.compileConnect(
-            obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)
-        ),
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
         isObex=True
     )
 
@@ -169,7 +165,59 @@ elif(args.action == 'putcontact'):
 
     time.sleep(at.Delay.ObexBoundary)
     sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
 
+
+elif(args.action == 'editcontact'):
+    if(args.file == '-' or args.file == ''):
+        raise Exception('Please give a .vcf file for import via --file parameter')
+    if(not args.options):
+        raise Exception('Please give the luid of the contact which should be edited')
+    vcf = readVcfFile(args.file)
+
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Put+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.VCardLuid.format(args.options) )
+            + obex.compileLengthHeader( len(vcf) )
+            + obex.compileMessage( obex.Header.EndOfBody, vcf )
+        ),
+        isObex=True
+    )
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
+elif(args.action == 'deletecontact'):
+    if(not args.options):
+        raise Exception('Please give the luid of the contact which should be edited')
+
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Put+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.VCardLuid.format(args.options) )
+        ),
+        isObex=True
+    )
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
     time.sleep(at.Delay.AfterExitObex)
     sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
 

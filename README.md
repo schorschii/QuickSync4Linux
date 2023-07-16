@@ -22,7 +22,13 @@ Then, you can use one of the following commands:
 ./quicksync.py getcontacts
 
 # create a new contact on device from file
-./quicksync.py putcontact --file mycontact.vcf
+./quicksync.py createcontact --file mycontact.vcf
+
+# overwrite a contact with given luid 517 (can be found in getcontacts vcf output)
+./quicksync.py editcontact 517 --file mycontact.vcf
+
+# delete contact with luid 517 from device
+./quicksync.py deletecontact 517
 
 # start a call
 ./quicksync.py dial 1234567890
