@@ -4,6 +4,7 @@ import serial
 import time
 import struct
 import argparse
+import re
 
 import at
 import obex
@@ -142,10 +143,10 @@ elif(args.action == 'getcontacts'):
     sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
 
 
-elif(args.action == 'createcontact'):
+elif(args.action == 'createcontacts'):
     if(args.file == '-' or args.file == ''):
         raise Exception('Please give a .vcf file for import via --file parameter')
-    vcf = readVcfFile(args.file)
+    vcf = readVcfFile(args.file).decode('utf8')
 
     sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
     sendAndReadResponse(
@@ -153,15 +154,20 @@ elif(args.action == 'createcontact'):
         isObex=True
     )
 
-    sendAndReadResponse(
-        obex.compileMessage(
-            obex.OpCode.Put+obex.Mask.Final,
-            obex.compileNameHeader( obex.FilePath.NewVCardGQS )
-            + obex.compileLengthHeader( len(vcf) )
-            + obex.compileMessage( obex.Header.EndOfBody, vcf )
-        ),
-        isObex=True
-    )
+    counter = 1
+    for vcard in re.findall("BEGIN\:VCARD[\S\s]*?END\:VCARD", vcf):
+        if(not args.verbose): print('Creating contact #{0}'.format(counter))
+        vcardBytes = vcard.encode('ascii')
+        sendAndReadResponse(
+            obex.compileMessage(
+                obex.OpCode.Put+obex.Mask.Final,
+                obex.compileNameHeader( obex.FilePath.NewVCardGQS )
+                + obex.compileLengthHeader( len(vcardBytes) )
+                + obex.compileMessage( obex.Header.EndOfBody, vcardBytes )
+            ),
+            isObex=True
+        )
+        counter += 1
 
     time.sleep(at.Delay.ObexBoundary)
     sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)

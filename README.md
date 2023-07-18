@@ -11,7 +11,7 @@ sudo usermod -aG dialout <username>
 ```
 
 ## Usage
-First, find out the correct serial port device. After connecting, a serial port like `/dev/ttyACM0` (USB on Linux), `/dev/usbmodem` (USB on macOS) or `/dev/rfcomm0` (Bluetooth) should appear. `/dev/ttyACM0` is used by default. If your device differs, you can use the `--device` parameter. More information regarding Bluetooth serial connections can be found [here](https://gist.github.com/0/c73e2557d875446b9603).
+First, find out the correct serial port device. After connecting, a serial port like `/dev/ttyACM0` (USB on Linux), `/dev/tty.usbmodem` (USB on macOS) or `/dev/rfcomm0` (Bluetooth) should appear. `/dev/ttyACM0` is used by default. If your device differs, you can use the `--device` parameter. More information regarding Bluetooth serial connections can be found [here](https://gist.github.com/0/c73e2557d875446b9603).
 
 Then, you can use one of the following commands:
 ```
@@ -21,8 +21,8 @@ Then, you can use one of the following commands:
 # read device contacts and print VCF to stdout (use --file to store it into a file instead)
 ./quicksync.py getcontacts
 
-# create a new contact on device from file
-./quicksync.py createcontact --file mycontact.vcf
+# create new contacts on device from vcf file
+./quicksync.py createcontacts --file mycontact.vcf
 
 # overwrite a contact with given luid 517 (can be found in getcontacts vcf output)
 ./quicksync.py editcontact 517 --file mycontact.vcf
