@@ -30,11 +30,37 @@ Then, you can use one of the following commands:
 # delete contact with luid 517 from device
 ./quicksync.py deletecontact 517
 
+# show files on device
+./quicksync.py listfiles
+
+# download file "/Pictures/Gigaset.jpg" from device into local file "gigaset.jpg"
+./quicksync.py download "/Pictures/Gigaset.jpg" -f gigaset.jpg
+
+# upload local file "cousin.jpg" into "/Clip Pictures/cousin.jpg" on device
+# your image size should match the screen/clip size which can be found by the `info` command - the device will crash and reboot otherwise!
+./quicksync.py upload "/Clip Pictures/cousin.jpg" -f cousin.jpg
+
+# delete file "/Clip Pictures/cousin.jpg" on device
+./quicksync.py delete "/Clip Pictures/cousin.jpg"
+
 # start a call
 ./quicksync.py dial 1234567890
 ```
 
 For debug purposes and reporting issues, please start the script with the `-v` parameter and have a look at the serial communication.
+
+## VCF Structure
+The Gigaset devices expect a VCF like the following example:
+```
+BEGIN:VCARD
+VERSION:2.1
+X-IRMC-LUID:769
+N:Last Name;First Name
+TEL;HOME:+49123456789
+TEL;CELL:+49456789123
+TEL;WORK:+49789123456
+END:VCARD
+```
 
 ## Tested Devices
 Please let me know if you tested this script with another device (regardless of whether it was successful or not).

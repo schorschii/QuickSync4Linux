@@ -4,6 +4,7 @@ import serial
 import time
 import struct
 import argparse
+import datetime
 import re
 
 import at
@@ -58,8 +59,8 @@ def sendAndReadResponse(data, wait=None, isObex=False):
 
         if(isObex): # obex command result handling
             try:
-                if(obex.evaluateResponse(buf, results, ser)):
-                    return results
+                if(obex.evaluateResponse(buf, results, ser, isObex==obex.QuickSyncOperation.Upload)):
+                    return b''.join(results)
                 else:
                     buf = b''
             except obex.InvalidObexLengthException:
@@ -124,13 +125,13 @@ elif(args.action == 'getcontacts'):
     #    isObex=True
     #)))
 
-    vcf = ''.join(sendAndReadResponse(
+    vcf = sendAndReadResponse(
         obex.compileMessage(
             obex.OpCode.Get+obex.Mask.Final,
             obex.compileNameHeader( obex.FilePath.PhoneBook )
         ),
         isObex=True
-    ))
+    ).decode('utf8')
     if(args.file == '-' or args.file == ''):
         print(vcf)
     else:
@@ -218,6 +219,160 @@ elif(args.action == 'deletecontact'):
         obex.compileMessage(
             obex.OpCode.Put+obex.Mask.Final,
             obex.compileNameHeader( obex.FilePath.VCardLuid.format(args.options) )
+        ),
+        isObex=True
+    )
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
+elif(args.action == 'listfiles'):
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    totalSpaceResponseBytes = sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileMessage( obex.Header.AppParameters, obex.AppParametersCommand.MemoryStatusTotal )
+        ),
+        isObex=True
+    )
+    freeSpaceResponseBytes = sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileMessage( obex.Header.AppParameters, obex.AppParametersCommand.MemoryStatusFree )
+        ),
+        isObex=True
+    )
+    print('Total Space:', obex.parseMemoryResponse(totalSpaceResponseBytes)/1024, 'KiB')
+    print('Free Space:', obex.parseMemoryResponse(freeSpaceResponseBytes)/1024, 'KiB')
+
+    for folder in [
+        obex.FolderPath.ScreenSavers,
+        obex.FolderPath.ClipPictures,
+        obex.FolderPath.Ringtones,
+    ]:
+        print()
+        print('===', folder)
+        sendAndReadResponse(
+            obex.compileMessage(
+                obex.OpCode.SetPath,
+                struct.pack('B', obex.SetPathFlags.DontCreate)
+                + struct.pack('B', obex.SetPathFlags.Constants)
+                + obex.compileNameHeader( folder )
+            ),
+            isObex=True
+        )
+        fileList = sendAndReadResponse(
+            obex.compileMessage(
+                obex.OpCode.Get+obex.Mask.Final,
+                obex.compileMessage( obex.Header.Type, obex.ObjectMimeType.FolderListing )
+            ),
+            isObex=True
+        ).decode('utf8')
+        files, maxLenName = obex.parseFileListXml(''.join(fileList))
+        for file in files:
+            print(
+                (file['fileid']+':').ljust(4),
+                file['name'].ljust(maxLenName),
+                datetime.datetime.strptime(file['modified'], '%Y%m%dT%H%M%S').strftime('%Y-%m-%d %H:%M'),
+                file['user-perm'],
+                str(round(int(file['size'])/1024, 1)) + ' KiB'
+            )
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
+elif(args.action == 'download'):
+    if(not args.options):
+        raise Exception('Please give the file name of the file which should be downloaded')
+    if(args.file == '-' or args.file == ''):
+        raise Exception('Please specify the output file name via --file parameter')
+
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    fileContent = sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileNameHeader( args.options )
+        ),
+        isObex=True
+    )
+    with open(args.file, 'wb') as f:
+        f.write(fileContent)
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
+elif(args.action == 'upload'):
+    if(not args.options):
+        raise Exception('Please give the file name of the file which should be uploaded')
+    if(args.file == '-' or args.file == ''):
+        raise Exception('Please specify the input file via --file parameter')
+
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    with open(args.file, 'rb') as f:
+        data = f.read()
+        chunkSize = 958
+        counter = 0
+        chunks = [data[i:i+chunkSize] for i in range(0, len(data), chunkSize)]
+        for chunk in chunks:
+            finalFlag = obex.Mask.Final if(counter == len(chunks)-1) else 0
+            bodyHeader = obex.Header.EndOfBody if(counter == len(chunks)-1) else obex.Header.Body
+            nameHeader = obex.compileNameHeader(args.options) if(counter == 0) else b''
+            lengthHeader = obex.compileLengthHeader(len(data)) if(counter == 0) else b''
+            sendAndReadResponse(
+                obex.compileMessage(
+                    obex.OpCode.Put+finalFlag,
+                    nameHeader
+                    + lengthHeader
+                    + obex.compileMessage( bodyHeader, chunk )
+                ),
+                isObex=obex.QuickSyncOperation.Upload
+            )
+            counter += 1
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
+elif(args.action == 'delete'):
+    if(not args.options):
+        raise Exception('Please give the file name of the file which should be deleted')
+
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Put+obex.Mask.Final,
+            obex.compileNameHeader( args.options )
         ),
         isObex=True
     )

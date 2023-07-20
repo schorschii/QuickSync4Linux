@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from xml.dom import minidom, expatbuilder
 import struct
 
 # https://en.wikipedia.org/wiki/OBject_EXchange
@@ -9,6 +10,11 @@ class Connection:
     Version = b"\x10"
     Flags   = b"\x00"
     MaxPacketSize = b"\xff\xfe"
+
+class SetPathFlags:
+    LayerUp    = 0b00000001 # backup a level before applying name (equivalent to ../)
+    DontCreate = 0b00000010 # don't create folder if it does not exist
+    Constants  = 0x00 # reserved, always 0x00
 
 class Mask:
     # the final bit indicates the last packet for the request/response
@@ -105,6 +111,10 @@ class Header:
     # 0x19 to 0x2f = Reserved
     # 0x30 to 0x3f = User defined
 
+class AppParametersCommand:
+    MemoryStatusTotal = b"\x32\x01\x01"
+    MemoryStatusFree  = b"\x32\x01\x02"
+
 class ServiceUuid:
     IrMcSync       = b"\x49\x52\x4d\x43\x2d\x53\x59\x4e\x43"
     DesSync        = b"\x6b\x01\xcb\x31\x41\x06\x11\xd4\x9a\x77\x00\x50\xda\x3f\x47\x1f"
@@ -114,21 +124,29 @@ class ServiceUuid:
 class FolderPath:
     ClipPictures = "/Clip Pictures"
     ScreenSavers = "/Pictures"
-    Ringtones = "/Sounds"
-    VCard = "/telecom/pb/luid/"
+    Ringtones    = "/Sounds"
+    VCard        = "/telecom/pb/luid/"
 
 class FilePath:
-    PhoneBook = "/telecom/pb.vcf"
-    InfoLog = "/telecom/pb/info.log"
-    DevInfo = "/telecom/devinfo.txt"
-    LuidCC = "/telecom/pb/luid/cc.log"
-    Luid0 = "/telecom/pb/luid/0.log"
-    VCardLuid = "/telecom/pb/luid/{0}.vcf"
-    NewVCardGQS = "/telecom/pb/luid/zapis.vcf"
-    NewVCardGDS = "/telecom/pb/luid/.vcf"
+    PhoneBook     = "/telecom/pb.vcf"
+    InfoLog       = "/telecom/pb/info.log"
+    DevInfo       = "/telecom/devinfo.txt"
+    LuidCC        = "/telecom/pb/luid/cc.log"
+    Luid0         = "/telecom/pb/luid/0.log"
+    VCardLuid     = "/telecom/pb/luid/{0}.vcf"
+    NewVCardGQS   = "/telecom/pb/luid/zapis.vcf"
+    NewVCardGDS   = "/telecom/pb/luid/.vcf"
     IncomingCalls = "telecom/ich.log"
     OutgoingCalls = "telecom/och.log"
-    MissedCalls = "telecom/mch.log"
+    MissedCalls   = "telecom/mch.log"
+
+class ObjectMimeType:
+    FolderListing = "x-obex/folder-listing\0"
+    Capability    = "x-obex/capability\0"
+
+class QuickSyncOperation:
+    Download = 1
+    Upload   = 2
 
 class ObexException(Exception):
     pass
@@ -136,6 +154,8 @@ class InvalidObexLengthException(Exception):
     pass
 
 def compileMessage(opcode, payload=b''):
+    if(not isinstance(payload, (bytes, bytearray))):
+        payload = payload.encode('ascii')
     return struct.pack('B', opcode) + struct.pack('>H', len(payload)+3) + payload
 
 def compileConnect(optionalHeaders):
@@ -150,25 +170,36 @@ def compileNameHeader(text):
 def compileLengthHeader(length):
     return struct.pack('B', Header.Length) + struct.pack('>I', length)
 
-def evaluateResponse(buf, results, ser):
+def parseMemoryResponse(data, offset=1):
+    if(data[offset] == 1):
+        return data[offset + 1]
+    elif(data[offset] == 2):
+        return struct.unpack('>H', data[offset+1:])[0]
+    elif(data[offset] == 4):
+        return struct.unpack('>I', data[offset+1:])[0]
+    else: return 0
+
+def evaluateResponse(buf, results, ser, isUpload):
     if(len(buf) < 3
     or len(buf) != struct.unpack('>H', buf[1:3])[0]):
         raise InvalidObexLengthException()
 
-    elif(buf[0] & Mask.NotFinal == ReCode.Continue):
-        if(buf[0] & Mask.Final):
-            results.extend(parseHeadersForBodyContent(buf[3:]))
+    elif(buf[0] & Mask.NotFinal == ReCode.Continue and buf[0] & Mask.Final):
+        if(isUpload):
+            return True
+        else:
+            results.extend(parseHeaders(buf[3:]))
             ser.write(compileMessage(OpCode.Get+Mask.Final))
             return False
 
     elif(buf[0] & Mask.NotFinal == ReCode.Success):
-        results.extend(parseHeadersForBodyContent(buf[3:]))
+        results.extend(parseHeaders(buf[3:]))
         return True
 
     else:
         raise ObexException('Device reported an obex command error, code {:02X}'.format(buf[0]))
 
-def parseHeadersForBodyContent(obj):
+def parseHeaders(obj):
     results = []
 
     if(len(obj) < 3):
@@ -176,21 +207,51 @@ def parseHeadersForBodyContent(obj):
 
     currOffset = 0
     while True:
-        if(len(obj) < currOffset+3): break
-        currLength = struct.unpack('>H', obj[currOffset+1:currOffset+3])[0]
-        if(currLength == 0): break
+        currLength = 1
 
-        if(obj[currOffset] == Header.Body
-        or obj[currOffset] == Header.EndOfBody):
-            currHeader = obj[currOffset:currLength]
+        if(len(obj) <= currOffset): break
+
+        if(obj[currOffset] == Header.Length):
+            currLength = 5
+            print('Payload Length:', struct.unpack('>I', obj[currOffset+1:currOffset+5])[0])
+
+        elif(obj[currOffset] == Header.Count):
+            currLength = 5
+            print('Payload Count:', struct.unpack('>I', obj[currOffset+1:currOffset+5])[0])
+
+        elif(obj[currOffset] == Header.Body
+        or obj[currOffset] == Header.EndOfBody
+        or obj[currOffset] == Header.AppParameters):
+            if(len(obj) < currOffset+3): break
+            currLength = struct.unpack('>H', obj[currOffset+1:currOffset+3])[0]
+            if(currLength == 0): break
+
+            currHeader = obj[currOffset:currOffset+currLength]
             if(len(currHeader) != currLength):
                 raise InvalidObexLengthException()
-            results.append(currHeader[3:].decode('utf8'))
+
+            results.append(currHeader[3:])
 
         else:
-            # unexpected obex header type
-            pass
+            #print('Unknown Header:', struct.pack('B', obj[currOffset]))
+            break
 
         currOffset += currLength
 
     return results
+
+def parseFileListXml(xmlstring):
+    files = []
+    maxLenName = 0
+    document = minidom.parseString(xmlstring).documentElement
+    for file in document.getElementsByTagName('file'):
+        maxLenName = max(maxLenName, len(file.getAttribute('name')))
+        files.append({
+            'name': file.getAttribute('name'),
+            'size': file.getAttribute('size'),
+            'fileid': file.getAttribute('fileid'),
+            'modified': file.getAttribute('modified'),
+            'user-perm': file.getAttribute('user-perm'),
+            'group-perm': file.getAttribute('group-perm'),
+        })
+    return files, maxLenName
