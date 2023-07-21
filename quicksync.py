@@ -47,7 +47,8 @@ def sendAndReadResponse(data, wait=None, isObex=False):
     results = []
     buf = b''
     while True:
-        time.sleep(wait if wait else at.Delay.AfterInvoke)
+        defaultDelay = at.Delay.AfterInvoke if(not isObex) else 0
+        time.sleep(wait if(wait) else defaultDelay)
 
         if(ser.in_waiting == 0 and not wait): continue
 
