@@ -22,9 +22,9 @@ Then, you can use one of the following commands:
 ./quicksync.py getcontacts
 
 # create new contacts on device from vcf file
-./quicksync.py createcontacts --file mycontact.vcf
+./quicksync.py createcontacts --file mycontacts.vcf
 
-# overwrite a contact with given luid 517 (can be found in getcontacts vcf output)
+# overwrite a contact with given luid 517 (the luid can be found in `getcontacts` vcf output)
 ./quicksync.py editcontact 517 --file mycontact.vcf
 
 # delete contact with luid 517 from device
@@ -34,11 +34,11 @@ Then, you can use one of the following commands:
 ./quicksync.py listfiles
 
 # download file "/Pictures/Gigaset.jpg" from device into local file "gigaset.jpg"
-./quicksync.py download "/Pictures/Gigaset.jpg" -f gigaset.jpg
+./quicksync.py download "/Pictures/Gigaset.jpg" --file gigaset.jpg
 
 # upload local file "cousin.jpg" into "/Clip Pictures/cousin.jpg" on device
 # your image size should match the screen/clip size which can be found by the `info` command - the device will crash and reboot otherwise!
-./quicksync.py upload "/Clip Pictures/cousin.jpg" -f cousin.jpg
+./quicksync.py upload "/Clip Pictures/cousin.jpg" --file cousin.jpg
 
 # delete file "/Clip Pictures/cousin.jpg" on device
 ./quicksync.py delete "/Clip Pictures/cousin.jpg"
