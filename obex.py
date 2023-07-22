@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from xml.dom import minidom, expatbuilder
+from enum import Enum
 import struct
 
 # https://en.wikipedia.org/wiki/OBject_EXchange
@@ -30,7 +31,7 @@ class OpCode:
     Session    = 0x87
     Abort      = 0xff
 
-class ReCode:
+class ReCode(int, Enum):
     # HTTP 1xx codes
     Continue         = 0x10
 
@@ -197,7 +198,11 @@ def evaluateResponse(buf, results, ser, isUpload):
         return True
 
     else:
-        raise ObexException('Device reported an obex command error, code {:02X}'.format(buf[0]))
+        errorString = 'Unknown Error'
+        try:
+            errorString = str(ReCode(buf[0] & Mask.NotFinal))
+        except ValueError: pass
+        raise ObexException('Device reported an obex command error, code {:02X} ({})'.format(buf[0], errorString))
 
 def parseHeaders(obj):
     results = []
