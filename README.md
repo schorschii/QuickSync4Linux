@@ -95,6 +95,16 @@ When using GIMP for image creation, use the following values in the JPG export d
 - do **not** "Save color profile"
 - **disable** "Progressive" in the "Advanced Options"
 
+### Sound Format
+Sounds must use the g722 codec and must be uploaded with the `.L22` file extension. Own sounds can easily be converted into g722 using ffmpgeg:
+```
+ffmpeg -i "Another brick in the wall part2.wav" -ar 16000 -acodec g722 "AnotherBrick2.g722"
+
+./quicksync.py upload "/Sounds/AnotherBrick2.L22" --file "AnotherBrick2.g722"
+```
+
+Please cut your audio track into a reasonable length before converting and uploading it.
+
 ## Dial When Clicking `tel:` Links
 To start a call with you Gigaset when clicking `tel:` links, you need to register QuickSync4Linux as `tel:` handler in your operating system. On Linux, you do this by copying `quicksync4linux.desktop` into `/usr/share/applications` and then execute `update-desktop-database`.
 

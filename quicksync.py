@@ -20,8 +20,8 @@ parser = argparse.ArgumentParser(
     description='Communicate with Gigaset devices',
     epilog='(c) Georg Sieber 2023. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
 )
-parser.add_argument('action', help='one of: info, dial, getcontacts, createcontact, editcontact, deletecontact')
-parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action')
+parser.add_argument('action', help='one of: info, dial, getcontacts, createcontact, editcontact, deletecontact, listfiles, upload, download, delete')
+parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action, a luid for contact operations or a file name on device for file actions')
 parser.add_argument('-d', '--device', default='/dev/ttyACM0', help='serial port device')
 parser.add_argument('-b', '--baud', default=9600)
 parser.add_argument('-f', '--file', default='-', help='file to read from or write into, stdout/stdin default')
