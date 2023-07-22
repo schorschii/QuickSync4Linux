@@ -126,7 +126,6 @@ class FolderPath:
     ClipPictures = "/Clip Pictures"
     ScreenSavers = "/Pictures"
     Ringtones    = "/Sounds"
-    VCard        = "/telecom/pb/luid/"
 
 class FilePath:
     PhoneBook     = "/telecom/pb.vcf"

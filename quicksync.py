@@ -14,30 +14,30 @@ import at
 import obex
 
 
-# parse arguments
-parser = argparse.ArgumentParser(
-    prog='QuickSync4Linux',
-    description='Communicate with Gigaset devices',
-    epilog='(c) Georg Sieber 2023. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
-)
-parser.add_argument('action', help='one of: info, dial, getcontacts, createcontact, editcontact, deletecontact, listfiles, upload, download, delete')
-parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action, a luid for contact operations or a file name on device for file actions')
-parser.add_argument('-d', '--device', default='/dev/ttyACM0', help='serial port device')
-parser.add_argument('-b', '--baud', default=9600)
-parser.add_argument('-f', '--file', default='-', help='file to read from or write into, stdout/stdin default')
-parser.add_argument('-v', '--verbose', action='count', default=0, help='print complete AT/Obex serial communication')
-args = parser.parse_args()
-
 # read config
 config = {}
 configParser = configparser.ConfigParser()
 configParser.read(str(Path.home())+'/.config/quicksync4linux.ini')
 if(configParser.has_section('general')): config = dict(configParser.items('general'))
 
+# parse arguments
+parser = argparse.ArgumentParser(
+    prog='QuickSync4Linux',
+    description='Communicate with Gigaset devices',
+    epilog='(c) Georg Sieber 2023. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
+)
+parser.add_argument('action', help='one of: info, obexinfo, dial, getcontacts, createcontact, editcontact, deletecontact, listfiles, upload, download, delete')
+parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action, a luid for contact operations or a file name on device for file actions')
+parser.add_argument('-d', '--device', default=config.get('device', '/dev/ttyACM0'), help='serial port device')
+parser.add_argument('-b', '--baud', default=config.get('baud', 9600))
+parser.add_argument('-f', '--file', default='-', help='file to read from or write into, stdout/stdin default')
+parser.add_argument('-v', '--verbose', action='count', default=0, help='print complete AT/Obex serial communication')
+args = parser.parse_args()
+
 # open serial port
 ser = serial.Serial(
-    config.get('device', args.device),
-    config.get('baud', args.baud),
+    args.device,
+    args.baud,
     write_timeout=at.Delay.TimeoutWrite
 )
 if(args.verbose): print('Connected to:', ser.name)
@@ -117,6 +117,59 @@ if(args.action == 'info'):
         print(title+':', response)
 
 
+elif(args.action == 'obexinfo'):
+    sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
+    sendAndReadResponse(
+        obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
+        isObex=True
+    )
+
+    print()
+    print('===', obex.FilePath.InfoLog)
+    print(sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.InfoLog )
+        ),
+        isObex=True
+    ).decode('utf8'))
+
+    print()
+    print('===', obex.FilePath.DevInfo)
+    print(sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.DevInfo )
+        ),
+        isObex=True
+    ).decode('utf8'))
+
+    print()
+    print('===', obex.FilePath.LuidCC)
+    print(sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.LuidCC )
+        ),
+        isObex=True
+    ).decode('utf8'))
+
+    print()
+    print('===', obex.FilePath.Luid0)
+    print(sendAndReadResponse(
+        obex.compileMessage(
+            obex.OpCode.Get+obex.Mask.Final,
+            obex.compileNameHeader( obex.FilePath.Luid0 )
+        ),
+        isObex=True
+    ).decode('utf8'))
+
+    time.sleep(at.Delay.ObexBoundary)
+    sendAndReadResponse(at.formatCommand(at.Command.ExitObex), wait=at.Delay.ObexBoundary)
+    time.sleep(at.Delay.AfterExitObex)
+    sendAndReadResponse(at.formatCommand(at.Command.Reset), wait=at.Delay.AfterExitObex)
+
+
 elif(args.action == 'dial'):
     if(not args.options):
         raise Exception('Please tell me a number to call')
@@ -130,14 +183,6 @@ elif(args.action == 'getcontacts'):
         obex.compileConnect(obex.compileMessage(obex.Header.Target, obex.ServiceUuid.DesSync)),
         isObex=True
     )
-
-    #print(''.join(sendAndReadResponse(
-    #    obex.compileMessage(
-    #        obex.OpCode.Get+obex.Mask.Final,
-    #        obex.compileNameHeader( obex.FilePath.InfoLog )
-    #    ),
-    #    isObex=True
-    #)))
 
     vcf = sendAndReadResponse(
         obex.compileMessage(

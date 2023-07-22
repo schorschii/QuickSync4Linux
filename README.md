@@ -27,6 +27,7 @@ Then, you can use one of the following commands:
 ```
 # read device metadata
 ./quicksync.py info
+./quicksync.py obexinfo
 
 # read device contacts and print VCF to stdout (use --file to store it into a file instead)
 ./quicksync.py getcontacts
@@ -34,7 +35,8 @@ Then, you can use one of the following commands:
 # create new contacts on device from vcf file
 ./quicksync.py createcontacts --file mycontacts.vcf
 
-# overwrite a contact with given luid 517 (the luid can be found in `getcontacts` vcf output)
+# overwrite a contact with given luid 517
+# luid = Local Unique IDentifier; can be found in `getcontacts` vcf output
 ./quicksync.py editcontact 517 --file mycontact.vcf
 
 # delete contact with luid 517 from device
@@ -89,10 +91,10 @@ Important: your image size should match the screen/clip size which can be found 
 
 When using GIMP for image creation, use the following values in the JPG export dialog:
 - set "Quality" to 80 or below
-- do **not** "Save Exif data"
-- do **not** "Save XMP data"
-- do **not** "Save thumbnail"
-- do **not** "Save color profile"
+- **disable** "Save Exif data"
+- **disable** "Save XMP data"
+- **disable** "Save thumbnail"
+- **disable** "Save color profile"
 - **disable** "Progressive" in the "Advanced Options"
 
 ### Sound Format
