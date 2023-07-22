@@ -59,6 +59,18 @@ N:Last Name;First Name
 TEL;HOME:+49123456789
 TEL;CELL:+49456789123
 TEL;WORK:+49789123456
+BDAY:2020-01-01T09:00
+END:VCARD
+```
+
+And with special chars encoded as Quoted Printable:
+```
+BEGIN:VCARD
+VERSION:2.1
+X-IRMC-LUID:1099
+N;ENCODING=QUOTED-PRINTABLE;CHARSET=UTF-8:|\\=C2=A7\;;=C3=A4=C3=B6=C3=BC=
+=C3=9F
+TEL;HOME:+49123
 END:VCARD
 ```
 
@@ -67,6 +79,7 @@ Please let me know if you tested this script with another device (regardless of 
 
 - Gigaset S68H (Bluetooth working, no USB port)
 - Gigaset CL660HX (USB working, no Bluetooth)
+- Gigaset SL450HX (USB + Bluetooth working)
 - Gigaset S700H PRO (USB + Bluetooth working)
 
 ## Support
