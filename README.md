@@ -14,7 +14,7 @@ sudo usermod -aG dialout <username>
 First, find out the correct serial port device. After connecting, a serial port like `/dev/ttyACM0` (USB on Linux), `/dev/tty.usbmodem` (USB on macOS) or `/dev/rfcomm0` ([Bluetooth on Linux](https://gist.github.com/0/c73e2557d875446b9603)) should appear. `/dev/ttyACM0` is used by default. If your device differs, you can use the `--device` parameter for every command or create a config file `~/.config/quicksync4linux.ini`.
 
 <details>
-<summary>`~/.config/quicksync4linux.ini`</summary>
+<summary>Example: ~/.config/quicksync4linux.ini</summary>
 
 ```
 [general]
