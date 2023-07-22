@@ -26,7 +26,7 @@ parser.add_argument('-v', '--verbose', action='count', default=0, help='print co
 args = parser.parse_args()
 
 # open serial port
-ser = serial.Serial(args.device, args.baud)
+ser = serial.Serial(args.device, args.baud, write_timeout=at.Delay.TimeoutWrite)
 if(args.verbose): print('Connected to:', ser.name)
 
 def readVcfFile(path):
