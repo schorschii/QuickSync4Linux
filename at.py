@@ -80,6 +80,9 @@ def evaluateResponse(buf, request):
         # special handling for the ExitObex command which does not return any text...
         return True
 
+    elif(request.decode('ascii').startswith(Command.Dial.format('').strip()) and b'OK\r\n' in buf):
+        return True
+
     elif(buf.endswith(b'OK\r\n')):
         return removeSuffix(removePrefix(buf, request.strip()), b'OK\r\n').strip()
 

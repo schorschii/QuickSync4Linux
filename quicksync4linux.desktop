@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=QuickSync4Linux
+Exec=quicksync dial %u
+Terminal=false
+MimeType=x-scheme-handler/tel;
+Icon=phone
+Categories=Application;Utility
+Comment=Control Gigaset devices and transfer data
+
+# execute `update-desktop-database` after copying into /usr/share/applications

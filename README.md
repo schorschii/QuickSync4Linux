@@ -11,7 +11,17 @@ sudo usermod -aG dialout <username>
 ```
 
 ## Usage
-First, find out the correct serial port device. After connecting, a serial port like `/dev/ttyACM0` (USB on Linux), `/dev/tty.usbmodem` (USB on macOS) or `/dev/rfcomm0` (Bluetooth) should appear. `/dev/ttyACM0` is used by default. If your device differs, you can use the `--device` parameter. More information regarding Bluetooth serial connections can be found [here](https://gist.github.com/0/c73e2557d875446b9603).
+First, find out the correct serial port device. After connecting, a serial port like `/dev/ttyACM0` (USB on Linux), `/dev/tty.usbmodem` (USB on macOS) or `/dev/rfcomm0` ([Bluetooth on Linux](https://gist.github.com/0/c73e2557d875446b9603)) should appear. `/dev/ttyACM0` is used by default. If your device differs, you can use the `--device` parameter for every command or create a config file `~/.config/quicksync4linux.ini`.
+
+<details>
+<summary>`~/.config/quicksync4linux.ini`</summary>
+
+```
+[general]
+device = /dev/rfcomm0
+baud = 9600
+```
+</details>
 
 Then, you can use one of the following commands:
 ```
@@ -37,7 +47,6 @@ Then, you can use one of the following commands:
 ./quicksync.py download "/Pictures/Gigaset.jpg" --file gigaset.jpg
 
 # upload local file "cousin.jpg" into "/Clip Pictures/cousin.jpg" on device
-# your image size should match the screen/clip size which can be found by the `info` command - the device will crash and reboot otherwise!
 ./quicksync.py upload "/Clip Pictures/cousin.jpg" --file cousin.jpg
 
 # delete file "/Clip Pictures/cousin.jpg" on device
@@ -49,7 +58,8 @@ Then, you can use one of the following commands:
 
 For debug purposes and reporting issues, please start the script with the `-v` parameter and have a look at the serial communication.
 
-## VCF Structure
+## Formats
+### VCF Structure
 The Gigaset devices expect a VCF like the following example:
 ```
 BEGIN:VCARD
@@ -74,6 +84,22 @@ TEL;HOME:+49123
 END:VCARD
 ```
 
+### Picture Format
+Important: your image size should match the screen/clip size which can be found by the `info` command. The device will crash and reboot otherwise when trying to open a non-conform file.
+
+When using GIMP for image creation, use the following values in the JPG export dialog:
+- set "Quality" to 80 or below
+- do **not** "Save Exif data"
+- do **not** "Save XMP data"
+- do **not** "Save thumbnail"
+- do **not** "Save color profile"
+- **disable** "Progressive" in the "Advanced Options"
+
+## Dial When Clicking `tel:` Links
+To start a call with you Gigaset when clicking `tel:` links, you need to register QuickSync4Linux as `tel:` handler in your operating system. On Linux, you do this by copying `quicksync4linux.desktop` into `/usr/share/applications` and then execute `update-desktop-database`.
+
+`quicksync` must be in you `PATH` variable. You can simply create a symlink for this: `sudo ln -s /path/to/your/quicksync.py /usr/local/bin/quicksync`.
+
 ## Tested Devices
 Please let me know if you tested this script with another device (regardless of whether it was successful or not).
 
@@ -81,6 +107,10 @@ Please let me know if you tested this script with another device (regardless of 
 - Gigaset CL660HX (USB working, no Bluetooth)
 - Gigaset SL450HX (USB + Bluetooth working)
 - Gigaset S700H PRO (USB + Bluetooth working)
+
+## Common Errors
+- `Device reported an AT command error`
+  Make sure you are on the home screen on the device. Do not open the contacts, menu or Media Pool when transferring data.
 
 ## Support
 If you like this project please consider making a donation using the sponsor button on [GitHub](https://github.com/schorschii/QuickSync4Linux) to support further development. If your financial resources do not allow this, you can at least leave a star for the Github repo.

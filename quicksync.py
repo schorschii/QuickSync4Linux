@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
+import configparser
+
 import serial
 import time
 import struct
@@ -25,8 +28,18 @@ parser.add_argument('-f', '--file', default='-', help='file to read from or writ
 parser.add_argument('-v', '--verbose', action='count', default=0, help='print complete AT/Obex serial communication')
 args = parser.parse_args()
 
+# read config
+config = {}
+configParser = configparser.ConfigParser()
+configParser.read(str(Path.home())+'/.config/quicksync4linux.ini')
+if(configParser.has_section('general')): config = dict(configParser.items('general'))
+
 # open serial port
-ser = serial.Serial(args.device, args.baud, write_timeout=at.Delay.TimeoutWrite)
+ser = serial.Serial(
+    config.get('device', args.device),
+    config.get('baud', args.baud),
+    write_timeout=at.Delay.TimeoutWrite
+)
 if(args.verbose): print('Connected to:', ser.name)
 
 def readVcfFile(path):
@@ -108,7 +121,7 @@ elif(args.action == 'dial'):
     if(not args.options):
         raise Exception('Please tell me a number to call')
 
-    response = sendAndReadResponse(at.formatCommand(at.Command.Dial, args.options)).decode('ascii')
+    sendAndReadResponse(at.formatCommand(at.Command.Dial, args.options), wait=0)
 
 
 elif(args.action == 'getcontacts'):
