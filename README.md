@@ -98,7 +98,7 @@ When using GIMP for image creation, use the following values in the JPG export d
 - **disable** "Progressive" in the "Advanced Options"
 
 ### Sound Format
-Sounds must use the g722 codec and must be uploaded with the `.L22` file extension. Own sounds can easily be converted into g722 using ffmpgeg:
+Sounds must use the g722 codec and must be uploaded with the `.L22` file extension. Own sounds can easily be converted into g722 using ffmpeg:
 ```
 ffmpeg -i "Another brick in the wall part2.wav" -ar 16000 -acodec g722 "AnotherBrick2.g722"
 
