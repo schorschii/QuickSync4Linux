@@ -119,6 +119,7 @@ Please let me know if you tested this script with another device (regardless of 
 - Gigaset CL660HX (USB working, no Bluetooth)
 - Gigaset SL450HX (USB + Bluetooth working)
 - Gigaset S700H PRO (USB + Bluetooth working)
+- Gigaset SL400H (USB working, Bluetooth is impossible to pair in GNOME because the PIN is not visible on the desktop at the moment you need to enter it in the handset)
 
 ## Common Errors
 - `Device reported an AT command error`
