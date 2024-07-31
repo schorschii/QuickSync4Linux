@@ -9,6 +9,7 @@ import struct
 import argparse
 import datetime
 import re
+import sys
 
 import at
 import obex
@@ -204,9 +205,12 @@ elif(args.action == 'getcontacts'):
 
 
 elif(args.action == 'createcontacts'):
-    if(args.file == '-' or args.file == ''):
+    if(args.file == ''):
         raise Exception('Please give a .vcf file for import via --file parameter')
-    vcf = readVcfFile(args.file).decode('utf8')
+    elif(args.file == '-'):
+        vcf = sys.stdin.read()
+    else:
+        vcf = readVcfFile(args.file).decode('utf8')
 
     sendAndReadResponse(at.formatCommand(at.Command.EnterObex), wait=at.Delay.AfterEnterObex)
     sendAndReadResponse(
