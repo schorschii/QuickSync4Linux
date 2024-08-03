@@ -2,3 +2,4 @@
 *.vcf
 /dist/*
 /venv/
+/assets/

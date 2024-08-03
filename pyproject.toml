@@ -22,3 +22,9 @@ Issues = "https://github.com/schorschii/QuickSync4Linux/issues"
 
 [project.scripts]
 quicksync = "QuickSync4Linux.quicksync:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "assets/",
+  "venv/",
+]
