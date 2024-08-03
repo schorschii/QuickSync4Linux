@@ -1,3 +1,4 @@
 *.pyc
 *.vcf
 /dist/*
+/venv/

@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "QuickSync4Linux"
-version = "0.1"
+version = "1.0"
 authors = [
-  { name="https://github.com/schorschii", email="it@georg-sieber.de" },
+  { name="https://github.com/schorschii" },
 ]
 description = "Gigaset QuickSync for Linux"
 readme = "README.md"

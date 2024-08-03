@@ -11,8 +11,10 @@ import datetime
 import re
 import sys
 
-from QuickSync4Linux import at
-from QuickSync4Linux import obex
+from . import at
+from . import obex
+from .__init__ import __version__
+
 
 def main():
     # read config
@@ -25,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog='QuickSync4Linux',
         description='Communicate with Gigaset devices',
-        epilog='(c) Georg Sieber 2023. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
+        epilog=f'Version {__version__}, (c) Georg Sieber 2023-2024. If you like this program please consider making a donation using the sponsor button on GitHub (https://github.com/schorschii/QuickSync4Linux) to support the development. It depends on users like you if this software gets further updates.'
     )
     parser.add_argument('action', help='one of: info, obexinfo, dial, getcontacts, createcontact, editcontact, deletecontact, listfiles, upload, download, delete')
     parser.add_argument('options', nargs='?', help='e.g. a phone number for the "dial" action, a luid for contact operations or a file name on device for file actions')
