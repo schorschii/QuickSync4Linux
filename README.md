@@ -98,7 +98,7 @@ When using GIMP for image creation, use the following values in the JPG export d
 - **disable** "Progressive" in the "Advanced Options"
 
 ### Sound Format
-Sounds must use the g722 codec and must be uploaded with the `.L22` file extension. Own sounds can easily be converted into g722 using ffmpgeg:
+Sounds must use the g722 codec and must be uploaded with the `.L22` file extension. Own sounds can easily be converted into g722 using ffmpeg:
 ```
 ffmpeg -i "Another brick in the wall part2.wav" -ar 16000 -acodec g722 "AnotherBrick2.g722"
 
@@ -119,6 +119,7 @@ Please let me know if you tested this script with another device (regardless of 
 - Gigaset CL660HX (USB working, no Bluetooth)
 - Gigaset SL450HX (USB + Bluetooth working)
 - Gigaset S700H PRO (USB + Bluetooth working)
+- Gigaset SL400H (USB working, Bluetooth is impossible to pair in GNOME because the PIN is not visible on the desktop at the moment you need to enter it in the handset)
 
 ## Common Errors
 - `Device reported an AT command error`
