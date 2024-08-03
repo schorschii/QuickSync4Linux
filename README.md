@@ -26,36 +26,36 @@ baud = 9600
 Then, you can use one of the following commands:
 ```
 # read device metadata
-./quicksync.py info
-./quicksync.py obexinfo
+python3 -m QuickSync4Linux info
+python3 -m QuickSync4Linux obexinfo
 
 # read device contacts and print VCF to stdout (use --file to store it into a file instead)
-./quicksync.py getcontacts
+python3 -m QuickSync4Linux getcontacts
 
 # create new contacts on device from vcf file
-./quicksync.py createcontacts --file mycontacts.vcf
+python3 -m QuickSync4Linux createcontacts --file mycontacts.vcf
 
 # overwrite a contact with given luid 517
 # luid = Local Unique IDentifier; can be found in `getcontacts` vcf output
-./quicksync.py editcontact 517 --file mycontact.vcf
+python3 -m QuickSync4Linux editcontact 517 --file mycontact.vcf
 
 # delete contact with luid 517 from device
-./quicksync.py deletecontact 517
+python3 -m QuickSync4Linux deletecontact 517
 
 # show files on device
-./quicksync.py listfiles
+python3 -m QuickSync4Linux listfiles
 
 # download file "/Pictures/Gigaset.jpg" from device into local file "gigaset.jpg"
-./quicksync.py download "/Pictures/Gigaset.jpg" --file gigaset.jpg
+python3 -m QuickSync4Linux download "/Pictures/Gigaset.jpg" --file gigaset.jpg
 
 # upload local file "cousin.jpg" into "/Clip Pictures/cousin.jpg" on device
-./quicksync.py upload "/Clip Pictures/cousin.jpg" --file cousin.jpg
+python3 -m QuickSync4Linux upload "/Clip Pictures/cousin.jpg" --file cousin.jpg
 
 # delete file "/Clip Pictures/cousin.jpg" on device
-./quicksync.py delete "/Clip Pictures/cousin.jpg"
+python3 -m QuickSync4Linux delete "/Clip Pictures/cousin.jpg"
 
 # start a call
-./quicksync.py dial 1234567890
+python3 -m QuickSync4Linux dial 1234567890
 ```
 
 For debug purposes and reporting issues, please start the script with the `-v` parameter and have a look at the serial communication.
@@ -102,7 +102,7 @@ Sounds must use the g722 codec and must be uploaded with the `.L22` file extensi
 ```
 ffmpeg -i "Another brick in the wall part2.wav" -ar 16000 -acodec g722 "AnotherBrick2.g722"
 
-./quicksync.py upload "/Sounds/AnotherBrick2.L22" --file "AnotherBrick2.g722"
+python3 -m QuickSync4Linux upload "/Sounds/AnotherBrick2.L22" --file "AnotherBrick2.g722"
 ```
 
 Please cut your audio track into a reasonable length before converting and uploading it.

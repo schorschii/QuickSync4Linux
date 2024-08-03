@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "QuickSync4Linux"
+version = "1.0"
+authors = [
+  { name="https://github.com/schorschii" },
+]
+description = "Gigaset QuickSync for Linux"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE.txt"}
+dependencies = [
+	"pyserial",
+]
+
+[project.urls]
+Homepage = "https://github.com/schorschii/QuickSync4Linux"
+Issues = "https://github.com/schorschii/QuickSync4Linux/issues"
+
+[project.scripts]
+quicksync = "QuickSync4Linux.quicksync:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "assets/",
+  "venv/",
+]

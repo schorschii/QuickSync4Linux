@@ -1,2 +1,5 @@
 *.pyc
 *.vcf
+/dist/*
+/venv/
+/assets/
