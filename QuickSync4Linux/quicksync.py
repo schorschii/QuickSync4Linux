@@ -97,7 +97,7 @@ def main():
             'Manufacturer': at.Command.GetManufacturer,
             'Type': at.Command.GetDeviceType,
             'Product': at.Command.GetProductName,
-            'Serial': at.Command.GetSerialNumber,
+            'Serial (IPUI)': at.Command.GetSerialNumber,
             'Internal Name': at.Command.GetInternalName,
             'Battery State': at.Command.GetBatteryState,
             'Signal State': at.Command.GetSignalState,
