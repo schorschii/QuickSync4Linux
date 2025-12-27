@@ -221,7 +221,7 @@ def main():
         )
 
         counter = 1
-        for vcard in re.findall("BEGIN\:VCARD[\S\s]*?END\:VCARD", vcf):
+        for vcard in re.findall(r"BEGIN\:VCARD[\S\s]*?END\:VCARD", vcf):
             if(not args.verbose): print('Creating contact #{0}'.format(counter))
             vcardBytes = vcard.encode('ascii')
             sendAndReadResponse(
