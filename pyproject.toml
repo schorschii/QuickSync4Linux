@@ -16,11 +16,6 @@ dependencies = [
 	"pyserial",
 ]
 
-[project.optional-dependencies]
-gui = [
-	"PySide6",
-]
-
 [project.urls]
 Homepage = "https://github.com/schorschii/QuickSync4Linux"
 Issues = "https://github.com/schorschii/QuickSync4Linux/issues"
@@ -32,7 +27,8 @@ quicksync = "QuickSync4Linux.quicksync:main"
 exclude = [
   "assets/",
   "venv/",
+  "QuickSync4LinuxGui/",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["QuickSync4LinuxGui"]
+packages = ["QuickSync4Linux"]

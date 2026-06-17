@@ -15,16 +15,18 @@ sudo usermod -aG dialout <username>
 # logout and login again to apply group membership
 ```
 
-### 2. Install Python Dependencies
+### 2. Install Python Packages
+
+Install the CLI package only:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
-For GUI support, install the optional `gui` extra (PySide6) instead:
+To install the GUI as well, install the separate GUI package. This also installs `QuickSync4Linux` and the required Qt libraries:
 
 ```bash
-pip install .[gui]
+pip install -e ./QuickSync4LinuxGui
 ```
 
 ### 3. System Dependencies
@@ -50,8 +52,8 @@ update-desktop-database ~/.local/share/applications/
 The CLI remains fully usable without GUI components:
 
 ```bash
-python3 -m QuickSync4LinuxGui listfiles -d <MAC>
-python3 -m QuickSync4LinuxGui getcontacts -d <MAC> -f contacts.vcf
+python3 -m QuickSync4Linux listfiles -d <MAC>
+python3 -m QuickSync4Linux getcontacts -d <MAC> -f contacts.vcf
 ```
 
 ## GUI Features
