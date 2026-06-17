@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "QuickSync4LinuxGui"
+version = "1.0"
+authors = [
+  { name="https://github.com/pandinus" },
+]
+description = "Graphical user interface for QuickSync4Linux"
+readme = "../README.md"
+requires-python = ">=3.10"
+license = {file = "../LICENSE.txt"}
+dependencies = [
+	"QuickSync4Linux",
+	"PySide6",
+]
+
+[project.urls]
+Homepage = "https://github.com/schorschii/QuickSync4Linux"
+Issues = "https://github.com/schorschii/QuickSync4Linux/issues"
+
+[project.gui-scripts]
+quicksync-gui = "QuickSync4LinuxGui.gui:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["QuickSync4LinuxGui"]

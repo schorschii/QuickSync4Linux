@@ -1,4 +1,4 @@
-__title__   = 'QuickSync4Linux'
+__title__   = 'QuickSync4LinuxGui'
 __author__  = 'Georg Sieber'
 __license__ = 'GPL-3.0'
 __version__ = '1.0'

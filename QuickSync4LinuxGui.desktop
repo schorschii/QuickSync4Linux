@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=QuickSync4LinuxGui
+Exec=python3 -m QuickSync4LinuxGui
+Path=/home/matze/Projekte/QuickSync4Linux/QuickSync4LinuxGui
+Terminal=false
+Icon=phone
+Categories=Application;Utility;
+Comment=Graphical interface for Gigaset DECT devices
+
+# execute `update-desktop-database` after copying into /usr/share/applications

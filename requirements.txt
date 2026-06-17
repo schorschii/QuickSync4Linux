@@ -1,1 +1,6 @@
-pyserial
+# Required dependencies for the QuickSync4Linux CLI
+pyserial>=3.5
+
+# GUI support is provided by the separate QuickSync4LinuxGui package:
+#   pip install -e .
+#   pip install -e ./QuickSync4LinuxGui

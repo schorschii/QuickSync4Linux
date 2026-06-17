@@ -27,4 +27,8 @@ quicksync = "QuickSync4Linux.quicksync:main"
 exclude = [
   "assets/",
   "venv/",
+  "QuickSync4LinuxGui/",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["QuickSync4Linux"]

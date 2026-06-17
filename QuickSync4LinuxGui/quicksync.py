@@ -390,7 +390,7 @@ def main():
     # read config
     config = {}
     config_parser = configparser.ConfigParser()
-    config_parser.read(str(Path.home()) + '/.config/quicksync4linux.ini')
+    config_parser.read(str(Path.home()) + '/.config/quicksync4linuxgui.ini')
     if config_parser.has_section('general'):
         config = dict(config_parser.items('general'))
 
